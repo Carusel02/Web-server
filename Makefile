@@ -7,5 +7,8 @@ client: client.c requests.c helpers.c buffer.c
 run: client
 	./client
 
+val: client
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./client
+
 clean:
 	rm -f *.o client
