@@ -104,26 +104,46 @@ void create_user(char **json) {
 void create_book(char **json) {
 
     /* alloc title, author, genre, publisher, page_count */
-    char *title = calloc(256, sizeof(char));
-    char *author = calloc(256, sizeof(char));
-    char *genre = calloc(256, sizeof(char));
-    char *publisher = calloc(256, sizeof(char));
+    char *title = calloc(128, sizeof(char));
+    char *author = calloc(128, sizeof(char));
+    char *genre = calloc(128, sizeof(char));
+    char *publisher = calloc(128, sizeof(char));
     int page_count;
     /* show prompts & read from input */
+    fflush(stdin);
+
+    getchar(); // Consume newline character
     printf("title=");
-    scanf("%s", title);
+    fgets(title, 128, stdin);
+    title[strlen(title) - 1] = '\0';
+
     printf("author=");
-    scanf("%s", author);
+    fgets(author, 128, stdin);
+    author[strlen(author) - 1] = '\0';
+
     printf("genre=");
-    scanf("%s", genre);
+    fgets(genre, 128, stdin);
+    genre[strlen(genre) - 1] = '\0';
+
     printf("publisher=");
-    scanf("%s", publisher);
+    fgets(publisher, 128, stdin);
+    publisher[strlen(publisher) - 1] = '\0';
     
     /* verification */
     printf("page_count=");
     int check = scanf("%d", &page_count);
-    if(check == 0) {
+    if(check == -1) {
         printf("numar pagini invalid!\n");
+        free(title);
+        free(author);
+        free(genre);
+        free(publisher);
+        *json = NULL;
+        return;
+    }
+
+    if(strlen(title) == 0 || strlen(author) == 0 || strlen(genre) == 0 || strlen(publisher) == 0) {
+        printf("Nu s-a putut adauga cartea!\n");
         free(title);
         free(author);
         free(genre);
@@ -156,6 +176,8 @@ void create_book(char **json) {
     free(publisher);
     json_value_free(root_value);
 
+    printf("Carte adaugata cu succes!\n");
+
 }
 
 int notification_client(char *response, notification not) {
@@ -176,7 +198,7 @@ int notification_client(char *response, notification not) {
     /* case register notification */
     case REGISTER:
         if(json_object_get_value(json_object(root_value), "error") != NULL) {
-            printf("error: %s\n", json_object_get_string(json_object(root_value), "error"));
+            printf("Nu e ok: %s\n", json_object_get_string(json_object(root_value), "error"));
         } else {
             printf("200 - OK - Utilizator înregistrat cu succes!\n");
         }
@@ -516,7 +538,6 @@ int main(int argc, char *argv[]) {
             char *json_book;
             create_book(&json_book);
             if (json_book == NULL) {
-                printf("Nu s-a putut adauga cartea!\n");
                 continue;
             }
 
@@ -622,6 +643,8 @@ int main(int argc, char *argv[]) {
 
             /* close connection */
             close(sockfd);
+
+            printf("Logout cu succes!\n");
             
             /*---------------------- LOGOUT ------------------------------*/
         }
